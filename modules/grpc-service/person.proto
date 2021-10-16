@@ -1,0 +1,20 @@
+  syntax = "proto3";
+
+message PersonMessage {
+   
+  integer id;
+  string first_name;
+  string last_name;
+  string company_name;
+}
+
+message Empty {
+
+}
+message PersonMessageList{
+    PersonMessage persons;
+}
+service PersonService {
+    rpc Create(PersonMessage) returns (PersonMessage);
+    rpc Get(Empty) returns (PersonMessageList);
+}

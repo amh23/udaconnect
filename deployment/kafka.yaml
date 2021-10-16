@@ -543,3 +543,25 @@ spec:
         resources:
           requests:
             storage: "8Gi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: kafka
+  name: kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: kafka
+  template:
+    metadata:
+      labels:
+        service: kafka
+    spec:
+      containers:
+      - image: docker.io/bitnami/bitnami-shell:10-debian-10-r172
+        name: kafka
+        imagePullPolicy: Always
+      restartPolicy: Always
