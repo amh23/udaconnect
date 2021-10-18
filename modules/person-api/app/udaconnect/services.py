@@ -7,7 +7,7 @@ from app.udaconnect.models import Connection, Location, Person
 from app.udaconnect.schemas import ConnectionSchema, LocationSchema, PersonSchema
 from geoalchemy2.functions import ST_AsText, ST_Point
 from sqlalchemy.sql import text
-from kafka import kafkaProducer
+ 
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("udaconnect-api")
@@ -21,16 +21,9 @@ class PersonService:
         new_person.last_name = person["last_name"]
         new_person.company_name = person["company_name"]
 
-        #db.session.add(new_person)
-        #db.session.commit()
-        producer = KafkaProducer(
-            bootstrap_servers = 'kafka-0.kafka.default.svc.cluster.local:9092'
-        )
-        producer.send('text',bytes(str(person),'utf-8'))
-        producer.flush()
-
-        logger.warning("New person added.")
-
+        db.session.add(new_person)
+        db.session.commit()
+        
         return new_person
 
     @staticmethod

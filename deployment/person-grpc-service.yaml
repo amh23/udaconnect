@@ -1,0 +1,62 @@
+serviceVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: person-grpc-service
+  name: person-grpc-service
+spec:
+  ports:
+  - name: "30008"
+    port: 30008
+    targetPort: 5000
+  selector:
+    service: person-grpc-service
+  type: ClusterIP
+---
+serviceVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: person-grpc-service
+  name: person-grpc-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: person-grpc-service
+  template:
+    metadata:
+      labels:
+        service: person-grpc-service
+    spec:
+      containers:
+      - image: amh23/person-grpc-service:latest
+        name: person-grpc-service
+        imagePullPolicy: Always
+        env:
+        - name: DB_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: db-env
+              key: DB_USERNAME
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: DB_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: db-env
+              key: DB_NAME
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: db-env
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: db-env
+              key: DB_PORT
+      restartPolicy: Always
