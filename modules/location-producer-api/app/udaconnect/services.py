@@ -7,7 +7,7 @@ from typing import Dict, List
 from app import db
 from app.udaconnect.models import  Location
  
-from kafka import KafkaProducer 
+from kafka import KafkaProducer, producer 
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("udaconnect-api")
@@ -33,5 +33,6 @@ class LocationService:
     @staticmethod
     def create(location: Dict) -> Location:
         encoded_data = json.dumps(location, indent=2).encode('utf-8')
+      #  producer = g.kafka_producer
         producer.send(KAFKA_TOPIC,encoded_data)
 

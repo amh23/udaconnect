@@ -1,7 +1,9 @@
+import os
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_restx import Api
 from flask_sqlalchemy import SQLAlchemy
+from kafka import KafkaProducer
 
 db = SQLAlchemy()
 
@@ -19,6 +21,7 @@ def create_app(env=None):
     register_routes(api, app)
     db.init_app(app)
 
+    
     @app.route("/health")
     def health():
         return jsonify("healthy")

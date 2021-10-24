@@ -1,8 +1,11 @@
+import os
+import sys
 from kafka import KafkaProducer
 
 
-TOPIC_NAME = 'locations'
-KAFKA_SERVER = 'localhost:9092'
+KAFKA_SERVER = os.environ["KAFKA_URL"]
+TOPIC_NAME = os.environ["KAFKA_TOPIC"]
+ 
 
 producer = KafkaProducer(bootstrap_servers=KAFKA_SERVER)
 

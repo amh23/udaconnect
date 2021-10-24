@@ -6,7 +6,7 @@ metadata:
   name: kafka
   labels:
     app.kubernetes.io/name: kafka
-    helm.sh/chart: kafka-14.2.1
+    helm.sh/chart: kafka-14.2.2
     app.kubernetes.io/instance: kafka
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: kafka
@@ -19,7 +19,7 @@ metadata:
   name: kafka-scripts
   labels:
     app.kubernetes.io/name: kafka
-    helm.sh/chart: kafka-14.2.1
+    helm.sh/chart: kafka-14.2.2
     app.kubernetes.io/instance: kafka
     app.kubernetes.io/managed-by: Helm
 data:
@@ -32,6 +32,12 @@ data:
     else
         export KAFKA_CFG_BROKER_ID="$((ID + 0))"
     fi
+    # Configure external ip and port
+    export EXTERNAL_ACCESS_IP=localhost
+    export EXTERNAL_ACCESS_PORT=$(echo '[30055]' | tr -d '[]' | cut -d ' ' -f "$(($ID + 1))")
+
+    # Configure Kafka advertised listeners
+    export KAFKA_CFG_ADVERTISED_LISTENERS="INTERNAL://${MY_POD_NAME}.kafka-headless.default.svc.cluster.local:9093,CLIENT://${MY_POD_NAME}.kafka-headless.default.svc.cluster.local:9092,EXTERNAL://${EXTERNAL_ACCESS_IP}:${EXTERNAL_ACCESS_PORT}"
 
     exec /entrypoint.sh /run.sh
 ---
@@ -102,6 +108,31 @@ spec:
     app.kubernetes.io/instance: kafka
     app.kubernetes.io/component: zookeeper
 ---
+# Source: kafka/templates/svc-external-access.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-0-external
+  labels:
+    app.kubernetes.io/name: kafka
+    helm.sh/chart: kafka-14.2.2
+    app.kubernetes.io/instance: kafka
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: kafka
+    pod: kafka-0
+spec:
+  type: NodePort
+  ports:
+    - name: tcp-kafka
+      port: 9094
+      nodePort: 30055
+      targetPort: kafka-external
+  selector:
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/instance: kafka
+    app.kubernetes.io/component: kafka
+    statefulset.kubernetes.io/pod-name: kafka-0
+---
 # Source: kafka/templates/svc-headless.yaml
 apiVersion: v1
 kind: Service
@@ -109,7 +140,7 @@ metadata:
   name: kafka-headless
   labels:
     app.kubernetes.io/name: kafka
-    helm.sh/chart: kafka-14.2.1
+    helm.sh/chart: kafka-14.2.2
     app.kubernetes.io/instance: kafka
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: kafka
@@ -137,7 +168,7 @@ metadata:
   name: kafka
   labels:
     app.kubernetes.io/name: kafka
-    helm.sh/chart: kafka-14.2.1
+    helm.sh/chart: kafka-14.2.2
     app.kubernetes.io/instance: kafka
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: kafka
@@ -343,7 +374,7 @@ metadata:
   name: kafka
   labels:
     app.kubernetes.io/name: kafka
-    helm.sh/chart: kafka-14.2.1
+    helm.sh/chart: kafka-14.2.2
     app.kubernetes.io/instance: kafka
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: kafka
@@ -362,10 +393,12 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: kafka
-        helm.sh/chart: kafka-14.2.1
+        helm.sh/chart: kafka-14.2.2
         app.kubernetes.io/instance: kafka
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: kafka
+      annotations:
+        checksum/scripts: a90bac92fca11854234a5260a8ea396a2e900f1526ac5f3c013660b1c8f28000
     spec:
       
       affinity:
@@ -392,7 +425,7 @@ spec:
       initContainers:
         - name: volume-permissions
           image: docker.io/bitnami/bitnami-shell:10-debian-10-r199
-          imagePullPolicy: "Always"
+          imagePullPolicy: "IfNotPresent"
           command:
             - /bin/bash
           args:
@@ -432,11 +465,13 @@ spec:
             - name: KAFKA_INTER_BROKER_LISTENER_NAME
               value: "INTERNAL"
             - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
-              value: "INTERNAL:PLAINTEXT,CLIENT:PLAINTEXT"
+              value: "INTERNAL:PLAINTEXT,CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT"
             - name: KAFKA_CFG_LISTENERS
-              value: "INTERNAL://:9093,CLIENT://:9092"
-            - name: KAFKA_CFG_ADVERTISED_LISTENERS
-              value: "INTERNAL://$(MY_POD_NAME).kafka-headless.default.svc.cluster.local:9093,CLIENT://$(MY_POD_NAME).kafka-headless.default.svc.cluster.local:9092"
+              value: "INTERNAL://:9093,CLIENT://:9092,EXTERNAL://:9094"
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
             - name: ALLOW_PLAINTEXT_LISTENER
               value: "yes"
             - name: KAFKA_VOLUME_DIR
@@ -488,7 +523,7 @@ spec:
             - name: KAFKA_CFG_SOCKET_SEND_BUFFER_BYTES
               value: "102400"
             - name: KAFKA_CFG_ZOOKEEPER_CONNECTION_TIMEOUT_MS
-              value: "6000"
+              value: "10000"
             - name: KAFKA_CFG_AUTHORIZER_CLASS_NAME
               value: ""
             - name: KAFKA_CFG_ALLOW_EVERYONE_IF_NO_ACL_FOUND
@@ -500,6 +535,8 @@ spec:
               containerPort: 9092
             - name: kafka-internal
               containerPort: 9093
+            - name: kafka-external
+              containerPort: 9094
           livenessProbe:
             tcpSocket:
               port: kafka-client
@@ -543,25 +580,3 @@ spec:
         resources:
           requests:
             storage: "8Gi"
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    service: kafka
-  name: kafka
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      service: kafka
-  template:
-    metadata:
-      labels:
-        service: kafka
-    spec:
-      containers:
-      - image: docker.io/bitnami/bitnami-shell:10-debian-10-r172
-        name: kafka
-        imagePullPolicy: Always
-      restartPolicy: Always
