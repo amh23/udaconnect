@@ -2,36 +2,36 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    service: person-grpc-service
-  name: person-grpc-service
+    service: grpc-service
+  name: grpc-service
 spec:
   ports:
   - name: "30008"
     port: 30008
     targetPort: 5000
   selector:
-    service: person-grpc-service
-  type: ClusterIP
+    service: grpc-service
+  type: NodePort
 ---
-serviceVersion: apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    service: person-grpc-service
-  name: person-grpc-service
+    service: grpc-service
+  name: grpc-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      service: person-grpc-service
+      service: grpc-service
   template:
     metadata:
       labels:
-        service: person-grpc-service
+        service: grpc-service
     spec:
       containers:
-      - image: amh23/person-grpc-service:latest
-        name: person-grpc-service
+      - image: amh23/grpc-service:latest
+        name: grpc-service
         imagePullPolicy: Always
         env:
         - name: DB_USERNAME
