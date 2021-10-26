@@ -5,7 +5,7 @@ import person_pb2_grpc
 print("Requesting persons...")
 
 
-channel = grpc.insecure_channel("127.0.0.1:30011")
+channel = grpc.insecure_channel("127.0.0.1:30008")
 stub = person_pb2_grpc.PersonServiceStub(channel)
 
 response = stub.Get(person_pb2.Empty())
