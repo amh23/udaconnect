@@ -8,7 +8,7 @@ spec:
   ports:
   - name: "30008"
     port: 30008
-    targetPort: 5000
+    targetPort: 5005
   selector:
     service: grpc-service
   type: NodePort

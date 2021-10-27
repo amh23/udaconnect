@@ -1,0 +1,12 @@
+	As shown in the diagram, person module is loosely couple from other
+ part of the app and firstly refactor person module. Person service is dependent on 
+person route. Person service provide data for Postgres database.
+	To be able to save location data asynchronously, kafka storage are used.
+Location route depends on location service. Kafka storage depends on location
+ service to get data. Postgres database depends on kafka storage.
+Location service depends on Postgres database to retrieve locations data.
+	Connection route depends on connection service. To get connection,
+connection service need persons data and gRPC service provide person data.
+Connection service need locations data too and Postgres database provide
+location data.
+

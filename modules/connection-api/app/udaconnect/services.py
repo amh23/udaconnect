@@ -10,11 +10,16 @@ from app.udaconnect.models import Connection, Location, Person
 from sqlalchemy.sql import text
 
 import grpc
+#from app.udaconnect.person_pb2  import person_pb2 
+#from app.udaconnect.person_pb2_grpc import person_pb2_grpc
+import person_pb2 as person_pb2
+import person_pb2_grpc as person_pb2_grpc
+
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("connection-api")
 
-PERSONS_GRPC_URL = os.environ.get("PERSONS_GRPC_URL","localhost:30008")
+PERSONS_GRPC_URL = os.environ.get("PERSONS_GRPC_URL")
 
 class ConnectionService:
     @staticmethod
