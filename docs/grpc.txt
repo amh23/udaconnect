@@ -1,0 +1,2 @@
+Use the following commands to generate protobuf files
+`python -m grpc_tools.protoc -I./ --python_out=./ --grpc_python_out=./ person.proto`
