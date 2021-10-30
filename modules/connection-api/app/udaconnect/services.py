@@ -10,10 +10,11 @@ from app.udaconnect.models import Connection, Location, Person
 from sqlalchemy.sql import text
 
 import grpc
-#from app.udaconnect.person_pb2  import person_pb2 
-#from app.udaconnect.person_pb2_grpc import person_pb2_grpc
-import person_pb2 as person_pb2
-import person_pb2_grpc as person_pb2_grpc
+#from . import person_pb2 as person_pb2
+#from . import person_pb2_grpc as person_pb2_grpc
+
+import person_pb2
+import person_pb2_grpc
 
 
 logging.basicConfig(level=logging.WARNING)
@@ -95,9 +96,9 @@ class PersonService:
         persons = []
 
         channel = grpc.insecure_channel(PERSONS_GRPC_URL)
-        stub = person_pb2_grpc.PersonServiceStub(channel)
+        stub =  person_pb2_grpc.PersonServiceStub(channel)
 
-        response = stub.Get(person_pb2.Empty())
+        response = stub.Get(person__pb2.Empty())
 
         for p in response.persons:
             person = Person()
