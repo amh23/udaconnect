@@ -1,0 +1,91 @@
+openapi: 3.0.0
+info:
+  title: udaconnect
+  contact: {}
+  version: '1.0'
+servers:
+- url: http://localhost:30009/api
+  variables: {}
+- url: http://localhost:30005/api/locations
+  variables: {}
+- url: http://localhost:30007/api/persons/1
+  variables: {}
+paths:
+  /persons:
+    get:
+      tags:
+      - Misc
+      summary: Retrieving persons
+      description: Retrieving all persons from database
+      operationId: Retrievingpersons
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      servers:
+      - url: http://localhost:30009/api
+        variables: {}
+  /29:
+    get:
+      tags:
+      - Misc
+      summary: Retrieving location
+      description: Retrieving selected locations from the database
+      operationId: Retrievinglocation
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      servers:
+      - url: http://localhost:30005/api/locations
+        variables: {}
+  /connection:
+    get:
+      tags:
+      - Misc
+      summary: Retrieving connections for given person
+      operationId: Retrievingconnectionsforgivenperson
+      parameters:
+      - name: start_date
+        in: query
+        description: ''
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: 2020-01-01
+      - name: end_date
+        in: query
+        description: ''
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: 2020-12-30
+      - name: distance
+        in: query
+        description: ''
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: integer
+          format: int32
+          example: 5
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      servers:
+      - url: http://localhost:30007/api/persons/1
+        variables: {}
+tags:
+- name: Misc
+  description: ''
